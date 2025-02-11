@@ -45,12 +45,18 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, onLogout, onMenuClick }) =>
     };
   }, []);
 
+  const sanitizeText = (text: string): string => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
   const fetchUserProfile = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.user_metadata) {
-        const firstName = user.user_metadata.first_name || '';
-        const lastName = user.user_metadata.last_name || '';
+        const firstName = sanitizeText(user.user_metadata.first_name || '');
+        const lastName = sanitizeText(user.user_metadata.last_name || '');
         setUserName(firstName && lastName ? `${firstName} ${lastName}` : 'User');
       }
     } catch (error) {
