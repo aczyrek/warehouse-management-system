@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Mail, Lock, AlertCircle, User, Check, X, Eye, EyeOff, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { supabase } from '../lib/supabase';
+import { supabase, checkSupabaseConnection } from '../lib/supabase';
 import PasswordReset from './PasswordReset';
 
 interface LoginProps {
@@ -26,6 +26,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isConnectionOk, setIsConnectionOk] = useState(true);
+
+  // Check Supabase connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const isConnected = await checkSupabaseConnection();
+      setIsConnectionOk(isConnected);
+      if (!isConnected) {
+        toast.error('Unable to connect to the server. Please try again later.');
+      }
+    };
+    checkConnection();
+  }, []);
 
   // Password strength indicators
   const [passwordStrength, setPasswordStrength] = useState({
@@ -100,6 +113,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
+    if (!isConnectionOk) {
+      toast.error('Unable to connect to the server. Please try again later.');
+      return;
+    }
+
     if (!validateForm()) {
       toast.error('Please fix the validation errors');
       return;
@@ -139,7 +157,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           password: password.trim()
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('Failed to fetch')) {
+            throw new Error('Network error - please check your connection and try again');
+          }
+          throw error;
+        }
 
         if (data?.user) {
           toast.success('Successfully logged in!');
@@ -424,7 +447,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div>
               <button
                 type="submit"
-                disabled={isLoading || Object.keys(validationErrors).length > 0}
+                disabled={isLoading || Object.keys(validationErrors).length > 0 || !isConnectionOk}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
