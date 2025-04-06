@@ -28,6 +28,26 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isConnectionOk, setIsConnectionOk] = useState(true);
 
+  // Force light theme for login page
+  useEffect(() => {
+    // Save current theme preference
+    const currentTheme = localStorage.getItem('theme');
+    
+    // Force light theme
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+    
+    // Cleanup function to restore theme preference when component unmounts
+    return () => {
+      if (currentTheme) {
+        localStorage.setItem('theme', currentTheme);
+        if (currentTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      }
+    };
+  }, []);
+
   // Check Supabase connection on mount
   useEffect(() => {
     const checkConnection = async () => {
@@ -157,12 +177,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           password: password.trim()
         });
 
-        if (error) {
-          if (error.message.includes('Failed to fetch')) {
-            throw new Error('Network error - please check your connection and try again');
-          }
-          throw error;
-        }
+        if (error) throw error;
 
         if (data?.user) {
           toast.success('Successfully logged in!');

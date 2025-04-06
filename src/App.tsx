@@ -11,6 +11,7 @@ import Login from './components/Login';
 import ProgressBar from './components/ProgressBar';
 import { Toaster } from 'react-hot-toast';
 import { LoadingProvider, useLoading } from './context/LoadingContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { supabase } from './lib/supabase';
 
 const MainContent = () => {
@@ -99,7 +100,7 @@ const MainContent = () => {
       {!isAuthenticated ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
           <ProgressBar />
           <Sidebar 
             onNavigate={handleNavigate} 
@@ -120,16 +121,27 @@ const MainContent = () => {
           </main>
         </div>
       )}
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'hsl(var(--background))',
+            color: 'hsl(var(--foreground))',
+            border: '1px solid hsl(var(--border))'
+          }
+        }}
+      />
     </>
   );
 };
 
 function App() {
   return (
-    <LoadingProvider>
-      <MainContent />
-    </LoadingProvider>
+    <ThemeProvider>
+      <LoadingProvider>
+        <MainContent />
+      </LoadingProvider>
+    </ThemeProvider>
   );
 }
 

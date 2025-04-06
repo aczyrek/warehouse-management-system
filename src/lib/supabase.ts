@@ -7,59 +7,31 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Retry configuration
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
-
-const retryFetch = async (url: string, options = {}, retries = MAX_RETRIES): Promise<Response> => {
-  try {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response;
-  } catch (error) {
-    if (retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-      return retryFetch(url, options, retries - 1);
-    }
-    throw new Error('Network error - unable to connect to the database. Please check your connection and try again.');
-  }
-};
-
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'Cache-Control': 'no-store',
-      'Pragma': 'no-cache'
-    },
-    fetch: retryFetch
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+    storageKey: 'wareflow-auth'
   }
 });
 
-// Initialize auth state with better error handling
+// Initialize auth state
 supabase.auth.onAuthStateChange((event, session) => {
-  try {
-    if (event === 'SIGNED_IN') {
-      console.log('User signed in:', session?.user?.email);
-    } else if (event === 'SIGNED_OUT') {
-      console.log('User signed out');
-    }
-  } catch (error) {
-    console.error('Auth state change error:', error);
+  if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session?.user?.email);
+    localStorage.setItem('wareflow-auth', JSON.stringify(session));
+  } else if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+    localStorage.removeItem('wareflow-auth');
   }
 });
 
-// Add health check function with lightweight query
+// Add health check function
 export const checkSupabaseConnection = async () => {
   try {
-    // Use a lightweight query that doesn't fetch actual data
-    const { error } = await supabase.from('inventory_items').select('id', { count: 'exact', head: true });
+    const { data, error } = await supabase.from('inventory_items').select('id').limit(1);
     if (error) throw error;
     return true;
   } catch (error) {
