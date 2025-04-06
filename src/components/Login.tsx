@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Mail, Lock, AlertCircle, User, Check, X, Eye, EyeOff } from 'lucide-react';
+import { Package, Mail, Lock, AlertCircle, User, Check, X, Eye, EyeOff, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import PasswordReset from './PasswordReset';
@@ -210,6 +210,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-xl rounded-lg sm:px-10">
+          {/* Test Credentials Box */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="flex items-center gap-2 mb-2 text-blue-800">
+              <Info className="w-5 h-5" />
+              <h3 className="font-medium">Test Credentials</h3>
+            </div>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p><span className="font-medium">Email:</span> test@wareflow.com</p>
+              <p><span className="font-medium">Password:</span> password123</p>
+            </div>
+          </div>
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 text-red-700">
