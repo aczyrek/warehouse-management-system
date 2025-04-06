@@ -6,7 +6,7 @@ WareFlow is a modern, full-featured warehouse management system built with React
 
 ## Live Demo
 
-Check out the live demo: [WareFlow Demo](https://stunning-queijadas-605806.netlify.app)
+Check out the live demo: [WareFlow Demo](https://leafy-belekoy-86b92c.netlify.app)
 
 ## Features
 
